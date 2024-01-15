@@ -29,6 +29,7 @@ hashcat -m 5600 hash.txt /usr/share/wordlists/rockyou.txt
 
 ## SMB Relay attack
 <p>This attacks works, when SMB signing is disabled on the machines.</p>
+
 1. Enumerate, if SMB signing is disabled
 ```bash
 nmap -p445 192.168.5.0/24 --script=smb2-security-mode
