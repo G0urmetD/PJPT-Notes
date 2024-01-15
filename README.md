@@ -113,3 +113,64 @@ Ntlmrelayx.py -6 -t ldaps://192.168.5.1 -wh fakewpad.test.local -l lootme
 ```
 
 3. You results will save into: '**/home/kali/lootme/domain_computers.html**'
+
+# Post Compromise Enumeration Active Directory
+## Domain Enumeration with ldapdomaindump
+<p>Domain Enumeration with ldapdomaindump</p>
+
+1. Run ldapdomaindump against domain controller - this will create files with information in about the domain
+```bash
+sudo ldapdomaindump ldaps://192.168.5.1 -u 'test.local\fcastle\' -p Password1
+```
+
+2. list all files and open the html files to investigate the domain information
+```bash
+# list all files
+ls -l
+
+# open up all html domain files
+firefox domain_*.html
+```
+
+## Domain Enumeration with Bloodhound
+<p>Domain Enumeration with Bloodhound</p>
+
+1. Run bloodhound with credentials, to fetch information
+```bash
+sudo bloodhound-python -d [DOMAIN] -u [USERNAME] -p [USER-PW] -ns [DC-IP]
+
+# example
+sudo bloodhound-python -d test.local -u fcastle -p Password1 -ns 192.168.5.1 -c all
+```
+
+2. Start up neo4j database and bloodhound to import the files
+```bash
+# if you started the database the first time, set a new password - REMEMBER THE PASSWORD!
+sudo neo4j console
+
+# start bloodhound
+sudo bloodhound
+```
+
+3. If bloodhound started, just drag and drop the json files into bloodhound and start investigation ;)
+
+## Domain Enumeration with Plumhound
+<p>Domain Enumeration with Plumhound</p>
+
+1. Start up neo4j database and bloodhound
+```bash
+# if you started the database the first time, set a new password - REMEMBER THE PASSWORD!
+sudo neo4j console
+
+# start bloodhound
+sudo bloodhound
+```
+
+2. Start Plumhound against the domain controller - BLOODHOUND MUST ALREADY RUNNING!
+```bash
+sudo python3 PlumHound.py --easy -p [USER-PW]
+
+sudo python3 PlumHound.py -x tasks/default.tasks -p [USER-PW]
+```
+
+3. Finally open up the browser and investigate the results
